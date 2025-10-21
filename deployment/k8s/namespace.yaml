@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rfcxxxx
+  labels:
+    name: rfcxxxx
+    app: rfcxxxx
+    version: "1.0.0"
+    description: "rfc-xxxx-geometric-keywords"
+  annotations:
+    description: "Namespace for RFC XXXX distributed consensus network"
+    maintainer: "Axiomatic Research"

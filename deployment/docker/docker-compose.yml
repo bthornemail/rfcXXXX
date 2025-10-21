@@ -1,0 +1,194 @@
+version: '3.8'
+
+services:
+  # RFC XXXX Node 1 - Primary Consensus Node
+  rfcxxxx-node-1:
+    build:
+      context: ../../
+      dockerfile: deployment/docker/Dockerfile
+    container_name: rfcxxxx-node-1
+    hostname: node-1
+    ports:
+      - "3001:3001"
+      - "8081:8080"
+    environment:
+      - NODE_ID=node-1
+      - NODE_PORT=3001
+      - HTTP_PORT=8080
+      - LOG_LEVEL=info
+      - NETWORK_MODE=development
+    volumes:
+      - node1_data:/app/data
+      - ../../src:/app/src:ro  # Mount source for development
+    networks:
+      - rfcxxxx-network
+    command: ["node", "dist/examples/network-flow-demo.js"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "console.log('Node 1 healthy')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # RFC XXXX Node 2 - Secondary Consensus Node
+  rfcxxxx-node-2:
+    build:
+      context: ../../
+      dockerfile: deployment/docker/Dockerfile
+    container_name: rfcxxxx-node-2
+    hostname: node-2
+    ports:
+      - "3002:3002"
+      - "8082:8080"
+    environment:
+      - NODE_ID=node-2
+      - NODE_PORT=3002
+      - HTTP_PORT=8080
+      - LOG_LEVEL=info
+      - NETWORK_MODE=development
+    volumes:
+      - node2_data:/app/data
+      - ../../src:/app/src:ro
+    networks:
+      - rfcxxxx-network
+    command: ["node", "dist/examples/network-flow-demo.js"]
+    restart: unless-stopped
+    depends_on:
+      - rfcxxxx-node-1
+    healthcheck:
+      test: ["CMD", "node", "-e", "console.log('Node 2 healthy')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # RFC XXXX Node 3 - Tertiary Consensus Node
+  rfcxxxx-node-3:
+    build:
+      context: ../../
+      dockerfile: deployment/docker/Dockerfile
+    container_name: rfcxxxx-node-3
+    hostname: node-3
+    ports:
+      - "3003:3003"
+      - "8083:8080"
+    environment:
+      - NODE_ID=node-3
+      - NODE_PORT=3003
+      - HTTP_PORT=8080
+      - LOG_LEVEL=info
+      - NETWORK_MODE=development
+    volumes:
+      - node3_data:/app/data
+      - ../../src:/app/src:ro
+    networks:
+      - rfcxxxx-network
+    command: ["node", "dist/examples/network-flow-demo.js"]
+    restart: unless-stopped
+    depends_on:
+      - rfcxxxx-node-1
+    healthcheck:
+      test: ["CMD", "node", "-e", "console.log('Node 3 healthy')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # RFC XXXX Node 4 - Quaternary Consensus Node
+  rfcxxxx-node-4:
+    build:
+      context: ../../
+      dockerfile: deployment/docker/Dockerfile
+    container_name: rfcxxxx-node-4
+    hostname: node-4
+    ports:
+      - "3004:3004"
+      - "8084:8080"
+    environment:
+      - NODE_ID=node-4
+      - NODE_PORT=3004
+      - HTTP_PORT=8080
+      - LOG_LEVEL=info
+      - NETWORK_MODE=development
+    volumes:
+      - node4_data:/app/data
+      - ../../src:/app/src:ro
+    networks:
+      - rfcxxxx-network
+    command: ["node", "dist/examples/network-flow-demo.js"]
+    restart: unless-stopped
+    depends_on:
+      - rfcxxxx-node-1
+    healthcheck:
+      test: ["CMD", "node", "-e", "console.log('Node 4 healthy')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Development Node - For running demos and tests
+  rfcxxxx-dev:
+    build:
+      context: ../../
+      dockerfile: deployment/docker/Dockerfile
+    container_name: rfcxxxx-dev
+    hostname: dev-node
+    ports:
+      - "3000:3000"
+      - "8080:8080"
+    environment:
+      - NODE_ID=dev-node
+      - NODE_PORT=3000
+      - HTTP_PORT=8080
+      - LOG_LEVEL=debug
+      - NETWORK_MODE=development
+    volumes:
+      - dev_data:/app/data
+      - ../../src:/app/src:ro
+      - ../../dist:/app/dist:ro
+    networks:
+      - rfcxxxx-network
+    command: ["node", "dist/examples/real-showcase-demo.js"]
+    restart: "no"
+    depends_on:
+      - rfcxxxx-node-1
+      - rfcxxxx-node-2
+      - rfcxxxx-node-3
+      - rfcxxxx-node-4
+
+  # Monitoring and Logging
+  rfcxxxx-monitor:
+    image: nginx:alpine
+    container_name: rfcxxxx-monitor
+    ports:
+      - "8090:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - rfcxxxx-network
+    depends_on:
+      - rfcxxxx-node-1
+      - rfcxxxx-node-2
+      - rfcxxxx-node-3
+      - rfcxxxx-node-4
+
+volumes:
+  node1_data:
+    driver: local
+  node2_data:
+    driver: local
+  node3_data:
+    driver: local
+  node4_data:
+    driver: local
+  dev_data:
+    driver: local
+
+networks:
+  rfcxxxx-network:
+    driver: bridge
+    name: rfcxxxx-deployment-network
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

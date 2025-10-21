@@ -1,0 +1,482 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rfcxxxx-node-1
+  namespace: rfcxxxx
+  labels:
+    app: rfcxxxx
+    component: node-1
+    role: primary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rfcxxxx
+      component: node-1
+  template:
+    metadata:
+      labels:
+        app: rfcxxxx
+        component: node-1
+        role: primary
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: rfcxxxx-node
+        image: docker_rfcxxxx-node-1:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3001
+          name: udp-consensus
+          protocol: UDP
+        - containerPort: 8080
+          name: http-api
+          protocol: TCP
+        - containerPort: 9090
+          name: metrics
+          protocol: TCP
+        env:
+        - name: NODE_ID
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: NODE_1_ID
+        - name: NODE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: NODE_1_PORT
+        - name: HTTP_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: HTTP_PORT
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: LOG_LEVEL
+        - name: NETWORK_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: NETWORK_MODE
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: NODE_ENV
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+          readOnly: true
+        - name: data-volume
+          mountPath: /app/data
+        - name: secrets-volume
+          mountPath: /app/secrets
+          readOnly: true
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - node
+            - -e
+            - "console.log('Node 1 liveness check')"
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - node
+            - -e
+            - "console.log('Node 1 readiness check')"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        command: ["node", "dist/examples/network-flow-demo.js"]
+      volumes:
+      - name: config-volume
+        configMap:
+          name: rfcxxxx-config
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: rfcxxxx-data-node-1
+      - name: secrets-volume
+        secret:
+          secretName: rfcxxxx-secrets
+      restartPolicy: Always
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rfcxxxx-node-2
+  namespace: rfcxxxx
+  labels:
+    app: rfcxxxx
+    component: node-2
+    role: secondary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rfcxxxx
+      component: node-2
+  template:
+    metadata:
+      labels:
+        app: rfcxxxx
+        component: node-2
+        role: secondary
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: rfcxxxx-node
+        image: docker_rfcxxxx-node-2:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3002
+          name: udp-consensus
+          protocol: UDP
+        - containerPort: 8080
+          name: http-api
+          protocol: TCP
+        - containerPort: 9090
+          name: metrics
+          protocol: TCP
+        env:
+        - name: NODE_ID
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: NODE_2_ID
+        - name: NODE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: NODE_2_PORT
+        - name: HTTP_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: HTTP_PORT
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: LOG_LEVEL
+        - name: NETWORK_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: NETWORK_MODE
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: NODE_ENV
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+          readOnly: true
+        - name: data-volume
+          mountPath: /app/data
+        - name: secrets-volume
+          mountPath: /app/secrets
+          readOnly: true
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - node
+            - -e
+            - "console.log('Node 2 liveness check')"
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - node
+            - -e
+            - "console.log('Node 2 readiness check')"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        command: ["node", "dist/examples/network-flow-demo.js"]
+      volumes:
+      - name: config-volume
+        configMap:
+          name: rfcxxxx-config
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: rfcxxxx-data-node-2
+      - name: secrets-volume
+        secret:
+          secretName: rfcxxxx-secrets
+      restartPolicy: Always
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rfcxxxx-node-3
+  namespace: rfcxxxx
+  labels:
+    app: rfcxxxx
+    component: node-3
+    role: tertiary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rfcxxxx
+      component: node-3
+  template:
+    metadata:
+      labels:
+        app: rfcxxxx
+        component: node-3
+        role: tertiary
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: rfcxxxx-node
+        image: docker_rfcxxxx-node-3:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3003
+          name: udp-consensus
+          protocol: UDP
+        - containerPort: 8080
+          name: http-api
+          protocol: TCP
+        - containerPort: 9090
+          name: metrics
+          protocol: TCP
+        env:
+        - name: NODE_ID
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: NODE_3_ID
+        - name: NODE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: NODE_3_PORT
+        - name: HTTP_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: HTTP_PORT
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: LOG_LEVEL
+        - name: NETWORK_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: NETWORK_MODE
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: NODE_ENV
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+          readOnly: true
+        - name: data-volume
+          mountPath: /app/data
+        - name: secrets-volume
+          mountPath: /app/secrets
+          readOnly: true
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - node
+            - -e
+            - "console.log('Node 3 liveness check')"
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - node
+            - -e
+            - "console.log('Node 3 readiness check')"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        command: ["node", "dist/examples/network-flow-demo.js"]
+      volumes:
+      - name: config-volume
+        configMap:
+          name: rfcxxxx-config
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: rfcxxxx-data-node-3
+      - name: secrets-volume
+        secret:
+          secretName: rfcxxxx-secrets
+      restartPolicy: Always
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rfcxxxx-node-4
+  namespace: rfcxxxx
+  labels:
+    app: rfcxxxx
+    component: node-4
+    role: quaternary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rfcxxxx
+      component: node-4
+  template:
+    metadata:
+      labels:
+        app: rfcxxxx
+        component: node-4
+        role: quaternary
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: rfcxxxx-node
+        image: docker_rfcxxxx-node-4:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3004
+          name: udp-consensus
+          protocol: UDP
+        - containerPort: 8080
+          name: http-api
+          protocol: TCP
+        - containerPort: 9090
+          name: metrics
+          protocol: TCP
+        env:
+        - name: NODE_ID
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: NODE_4_ID
+        - name: NODE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: NODE_4_PORT
+        - name: HTTP_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: HTTP_PORT
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: LOG_LEVEL
+        - name: NETWORK_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: NETWORK_MODE
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: rfcxxxx-config
+              key: NODE_ENV
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+          readOnly: true
+        - name: data-volume
+          mountPath: /app/data
+        - name: secrets-volume
+          mountPath: /app/secrets
+          readOnly: true
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - node
+            - -e
+            - "console.log('Node 4 liveness check')"
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - node
+            - -e
+            - "console.log('Node 4 readiness check')"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        command: ["node", "dist/examples/network-flow-demo.js"]
+      volumes:
+      - name: config-volume
+        configMap:
+          name: rfcxxxx-config
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: rfcxxxx-data-node-4
+      - name: secrets-volume
+        secret:
+          secretName: rfcxxxx-secrets
+      restartPolicy: Always

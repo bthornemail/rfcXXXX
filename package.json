@@ -1,0 +1,42 @@
+{
+  "name": "rfc-xxxx-geometric-keywords",
+  "version": "1.0.0",
+  "description": "RFC XXXX Implementation: Geometric Normative Keywords with Network Partition Handling and IPv6 Neural Encoding",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "node --test dist/tests/*.test.js",
+    "ts:demo": "tsx src/examples/index.ts",
+    "demo:simple": "node dist/examples/simple-demo.js",
+    "demo:proof": "node dist/examples/proof-demo.js",
+    "demo:network": "node dist/examples/network-flow-demo.js",
+    "demo:consensus": "node dist/examples/geometric-consensus-demo.js",
+    "demo:partition": "node dist/examples/partition-handling-demo.js",
+    "demo:ipv6": "node dist/examples/ipv6-neural-demo.js",
+    "demo:integrated": "node dist/examples/integrated-demo.js",
+    "demo:real": "node dist/examples/real-showcase-demo.js",
+    "demo:all": "npm run demo:consensus && npm run demo:partition && npm run demo:ipv6 && npm run demo:integrated",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "rfc",
+    "geometric-consensus",
+    "network-partition",
+    "ipv6-neural",
+    "betti-numbers",
+    "topological-invariants",
+    "distributed-consensus"
+  ],
+  "author": "Axiomatic Research",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

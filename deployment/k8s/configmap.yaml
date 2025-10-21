@@ -1,0 +1,136 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rfcxxxx-config
+  namespace: rfcxxxx
+  labels:
+    app: rfcxxxx
+    component: config
+data:
+  # Network Configuration
+  NETWORK_MODE: "production"
+  LOG_LEVEL: "info"
+
+  # Node Configuration
+  NODE_1_ID: "node-1"
+  NODE_1_PORT: "3001"
+  NODE_2_ID: "node-2"
+  NODE_2_PORT: "3002"
+  NODE_3_ID: "node-3"
+  NODE_3_PORT: "3003"
+  NODE_4_ID: "node-4"
+  NODE_4_PORT: "3004"
+
+  # HTTP Configuration
+  HTTP_PORT: "8080"
+
+  # Consensus Configuration
+  CONSENSUS_TIMEOUT: "5000"
+  RETRY_ATTEMPTS: "3"
+  MAX_MESSAGE_SIZE: "8192"
+
+  # Geometric Configuration
+  DEFAULT_GEOMETRIC_TYPE: "TETRAHEDRON"
+  CONSENSUS_THRESHOLD: "0.75"
+
+  # IPv6 Neural Configuration
+  DEFAULT_MODEL_FAMILY: "1"
+  DEFAULT_FEATURE_DIM: "512"
+  DEFAULT_HIDDEN_LAYERS: "6"
+  DEFAULT_ATTENTION_HEADS: "8"
+
+  # Performance Configuration
+  HEALTH_CHECK_INTERVAL: "30"
+  HEALTH_CHECK_TIMEOUT: "10"
+  HEALTH_CHECK_RETRIES: "3"
+
+  # Monitoring Configuration
+  METRICS_ENABLED: "true"
+  METRICS_PORT: "9090"
+
+  # Application Configuration
+  NODE_ENV: "production"
+  TZ: "UTC"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rfcxxxx-network-config
+  namespace: rfcxxxx
+  labels:
+    app: rfcxxxx
+    component: network-config
+data:
+  # Network topology configuration
+  network-topology.yaml: |
+    nodes:
+      - id: "node-1"
+        role: "primary"
+        port: 3001
+        neighbors: ["node-2", "node-3", "node-4"]
+      - id: "node-2"
+        role: "secondary"
+        port: 3002
+        neighbors: ["node-1", "node-3", "node-4"]
+      - id: "node-3"
+        role: "tertiary"
+        port: 3003
+        neighbors: ["node-1", "node-2", "node-4"]
+      - id: "node-4"
+        role: "quaternary"
+        port: 3004
+        neighbors: ["node-1", "node-2", "node-3"]
+
+    consensus:
+      geometric_types:
+        - "TETRAHEDRON"
+        - "OCTAHEDRON"
+        - "CUBE"
+        - "DODECAHEDRON"
+        - "ICOSAHEDRON"
+
+      thresholds:
+        MUST_LOCAL: 1.0
+        SHOULD_LOCAL: 0.8
+        MAY_LOCAL: 0.5
+        MUST_FEDERATION: 1.0
+
+  # IPv6 neural architecture templates
+  neural-architectures.yaml: |
+    architectures:
+      - name: "gpt-small"
+        model_family: 1
+        feature_dim: 512
+        hidden_layers: 6
+        attention_heads: 8
+        activation: "gelu"
+        normalization: "layer"
+        context_length: 2048
+        vocab_size: 50257
+        dropout: 0.1
+        learning_rate: 0.001
+
+      - name: "bert-base"
+        model_family: 2
+        feature_dim: 768
+        hidden_layers: 12
+        attention_heads: 12
+        activation: "relu"
+        normalization: "batch"
+        context_length: 1024
+        vocab_size: 30000
+        dropout: 0.2
+        learning_rate: 0.0005
+
+      - name: "transformer-xl"
+        model_family: 3
+        feature_dim: 1024
+        hidden_layers: 12
+        attention_heads: 12
+        activation: "silu"
+        normalization: "rms"
+        context_length: 4095
+        vocab_size: 65535
+        dropout: 0.0
+        learning_rate: 0.0001
